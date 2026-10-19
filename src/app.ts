@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, {
   type Request,
   type Response,
@@ -5,24 +6,52 @@ import express, {
 } from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import { connectDB } from "./config/db";
 import { authRouter } from "./routes/auth";
+import { tutorRouter } from "./routes/tutors";
+import { sessionRouter } from "./routes/sessions";
 import { bookingRouter } from "./routes/bookings";
 
-// Builds the app and stops. It never opens a port or touches the
-// database -- server.ts does both.
+// Builds the app and stops. It never opens a port -- server.ts does that
+// locally, and on Vercel the default export at the bottom IS the server.
 export const app = express();
 
-// Lets the Vite app on 5173 call this one from the browser.
-app.use(cors());
+// ===== GT4 PART 1: one line, and every website was allowed to call us ==
+// app.use(cors());
+//
+// NOTE: Right for a laptop. Deployed, it means any page anywhere can send
+//       a request with your user's token in it.
+// ===== GT4 PART 2: only the origins this app is actually served from ===
+
+// One environment variable, comma-separated, so the list differs on the
+// laptop and on Vercel without the code knowing which it is. An origin is
+// scheme + host + port only: no path, no trailing slash.
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter((origin) => origin !== "");
+
+app.use(cors({ origin: ALLOWED_ORIGINS }));
 
 // Puts a JSON request body on req.body. Without it req.body is undefined.
 app.use(express.json());
+
+// GT4 PART 2: deployed there is no startup step -- a request is the first
+// thing that happens -- so the wait for the database moves here, in front
+// of every route. After the first request this awaits a promise that has
+// already resolved, which costs nothing.
+app.use(async (_req: Request, _res: Response, next: NextFunction) => {
+  await connectDB();
+  next();
+});
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ ok: true, db: mongoose.connection.readyState === 1 });
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/tutors", tutorRouter);
+app.use("/api/sessions", sessionRouter);
 app.use("/api/bookings", bookingRouter);
 
 // Nothing above matched: answer in JSON, not Express's HTML page.
@@ -57,3 +86,8 @@ app.use(
     res.status(500).json({ message: "Something went wrong" });
   },
 );
+
+// Vercel looks for an Express app in src/app.ts (among other places) and
+// wants a default export from it. That is the whole of the deployment
+// config, which is why this repo has no vercel.json.
+export default app;

@@ -78,3 +78,24 @@ export type NewBookingBody = Pick<
 export type BookingPatchBody = Partial<
   Pick<BookingDoc, "status" | "notes" | "contactEmail" | "preferredDate">
 >;
+
+// ---------------------------------------------------------------------
+// SESSION 10: the reference data -- tutors and the sessions they offer.
+//
+// Nobody creates these through the API; they go in once from src/seed.ts.
+// Unlike User and Booking they keep the ids db.json gave them ("1",
+// "101"), stored AS the _id, because every booking already holds a
+// sessionId like "101" and the frontend links to /tutors/1.
+// ---------------------------------------------------------------------
+
+// A tutor in the public directory. Not a User: tutors here have no
+// password and cannot log in -- they are rows the site lists.
+export type TutorDoc = Omit<TutoringUser, "id"> & {
+  _id: string;
+};
+
+// tutorId points at a Tutor's _id, so it is a string too.
+export type SessionDoc = Omit<Session, "id" | "tutorId"> & {
+  _id: string;
+  tutorId: string;
+};
