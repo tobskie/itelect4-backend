@@ -11,6 +11,7 @@ import { authRouter } from "./routes/auth";
 import { tutorRouter } from "./routes/tutors";
 import { sessionRouter } from "./routes/sessions";
 import { bookingRouter } from "./routes/bookings";
+import { aiRouter } from "./routes/ai";
 
 // Builds the app and stops. It never opens a port -- server.ts does that
 // locally, and on Vercel the default export at the bottom IS the server.
@@ -53,6 +54,9 @@ app.use("/api/auth", authRouter);
 app.use("/api/tutors", tutorRouter);
 app.use("/api/sessions", sessionRouter);
 app.use("/api/bookings", bookingRouter);
+// ===== SESSION 11: one more router, mounted like the other three ====
+// Private, rate limited, and the only route that talks to Gemini.
+app.use("/api/ai", aiRouter);
 
 // Nothing above matched: answer in JSON, not Express's HTML page.
 app.use((req: Request, res: Response) => {
