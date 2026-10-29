@@ -4,7 +4,7 @@
 
 The REST API behind the Peer Tutoring Platform: Express 5 in TypeScript, MongoDB Atlas through Mongoose, JWT authentication, and an AI route utilizing Gemini.
 
-- **Live API:** https://<your-backend-subdomain>.vercel.app/api/health
+- **Live API:** https://itelect4-backend-xi.vercel.app/api/health
 - **Frontend repo:** https://github.com/tobskie/itelect4-project
 
 ## Architecture
